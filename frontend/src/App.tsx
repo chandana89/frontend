@@ -1,20 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { api } from './api';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { PortfolioRoutes } from './routes';
 
 function App() {
-  const [portfolio, setPortfolio] = useState<string>('');
-
-  useEffect(() => {
-   api.GetBio()
-      .then(setPortfolio)
-  }, []);
-
   return (
-    <div>
-      <h1>Portfolio</h1>
-      {portfolio}
-    </div>
-  );
+  
+      <Routes>
+          {PortfolioRoutes.map(route =>
+            <Route
+              key={route.path}
+              path={route.path}
+              element={route.element}
+            />
+          )}
+      </Routes>
+  )
 }
 
 export default App;
