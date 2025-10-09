@@ -24,7 +24,7 @@ export const api = {
     //   if (ret.data.status !== 'ok') {
     //     throw new Error(ret.data.message);
     //   }
-      console.log(ret,"ret")
+    
       return ret.data.output[0].content[0].text;
 
     } catch (e: any) {
@@ -38,7 +38,7 @@ export const api = {
     //   if (ret.data.status !== 'ok') {
     //     throw new Error(ret.data.message);
     //   }
-      console.log(ret,"ret")
+   
       return ret.data.output[1].content[0].text;
 
     } catch (e: any) {
