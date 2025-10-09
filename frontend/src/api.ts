@@ -32,9 +32,9 @@ export const api = {
     }
   },
 
-  async ExtractBO(fileURL: string): Promise<string> {
+  async ExtractBO(form: {fileURL: string, prompt: string}): Promise<string> {
     try {
-      const ret = await axios.post(`${this.apiRoot}/chatgpt/url`, { fileURL });
+      const ret = await axios.post(`${this.apiRoot}/chatgpt/url`, form);
     //   if (ret.data.status !== 'ok') {
     //     throw new Error(ret.data.message);
     //   }
