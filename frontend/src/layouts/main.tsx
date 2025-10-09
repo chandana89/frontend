@@ -5,7 +5,7 @@ export const MainLayout = ({ children }: { children: ReactElement }): ReactEleme
 
   return (
     <>
-      <TopNav />
+      {/* <TopNav /> */}
       <div
         className="app-content content"
         style={{ transition: "300ms ease all" }}
