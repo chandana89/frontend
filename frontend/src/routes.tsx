@@ -1,5 +1,6 @@
 import { MainLayout } from "./layouts/main";
 import { AboutPage } from "./pages/about";
+import { ChatPage } from "./pages/chat";
 import { DashboardPage } from "./pages/dashboard";
 import { ExperiencePage } from "./pages/experience";
 import { ProjectsPage } from "./pages/projects";
@@ -9,6 +10,10 @@ export const PortfolioRoutes = [
     {
         path: '/',
         element: <MainLayout><DashboardPage /></MainLayout>,
+    },
+    {
+        path: '/chat',
+        element: <MainLayout><ChatPage /></MainLayout>,
     },
     {
         path: '/about',
