@@ -1,9 +1,11 @@
 import { ReactElement } from "react";
+import { TopNav } from "../components/top-nav";
 
 export const MainLayout = ({ children }: { children: ReactElement }): ReactElement => {
 
   return (
     <>
+      <TopNav />
       <div
         className="app-content content"
         style={{ transition: "300ms ease all" }}

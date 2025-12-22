@@ -1,0 +1,43 @@
+.app-content {
+    padding-top: 64px; // space for fixed top nav
+    transition: 300ms ease all;
+}
+
+
+.top-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 64px;
+    background-color: #4e5677; // blue
+    display: flex;
+    align-items: center;
+    // justify-content: space-between;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+    &__logo {
+        color: #ffffff;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    &__menu {
+        display: flex;
+        gap: 20px;
+
+        a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 18px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background 0.2s ease;
+
+            &:hover {
+                background-color: rgba(255, 255, 255, 0.15);
+            }
+        }
+    }
+}

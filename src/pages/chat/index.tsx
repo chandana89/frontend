@@ -25,7 +25,7 @@ export const ChatPage = () => {
   }, [messageListener])
   return (
     <>
-      {""}
+      <div className="mb-4">Type your messages here to interact with our team</div>
       <MessageInput send={send} />
       <Messages messages={messages} />
     </>
