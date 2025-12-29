@@ -1,14 +1,43 @@
 import axios from "axios";
 
 export const api = {
-     apiRoot: 'http://localhost:8001',
-    async GetBio(): Promise<string> {
+  apiRoot: 'http://localhost:8001',
+
+  async Login(userName: string, password: string): Promise<{ user: string }> {
+    try {
+      const ret = await axios.post(`${this.apiRoot}/authenticate/login`, { userName, password });
+      //   if (ret.data.status !== 'ok') {
+      //     throw new Error(ret.data.message);
+      //   }
+      console.log(ret, "ret")
+      return { user: ret.data.user };
+
+    } catch (e: any) {
+      throw new Error(e.response?.data?.message || `An error has occured, please try again later`);
+    }
+  },
+
+  async SaveToken(userName: string, token: string): Promise<string> {
+    try {
+      const ret = await axios.post(`${this.apiRoot}/notifications/token`, { userName, token });
+      //   if (ret.data.status !== 'ok') {
+      //     throw new Error(ret.data.message);
+      //   }
+      console.log(ret, "ret")
+      return ret.data.details;
+
+    } catch (e: any) {
+      throw new Error(e.response?.data?.message || `An error has occured, please try again later`);
+    }
+  },
+
+  async GetBio(): Promise<string> {
     try {
       const ret = await axios.get(`${this.apiRoot}/`);
-    //   if (ret.data.status !== 'ok') {
-    //     throw new Error(ret.data.message);
-    //   }
-      console.log(ret,"ret")
+      //   if (ret.data.status !== 'ok') {
+      //     throw new Error(ret.data.message);
+      //   }
+      console.log(ret, "ret")
       return ret.data.details;
 
     } catch (e: any) {
@@ -21,10 +50,10 @@ export const api = {
       const formData: FormData = new FormData();
       formData.append('asic', asic, asic.name);
       const ret = await axios.post(`${this.apiRoot}/chatgpt`, formData);
-    //   if (ret.data.status !== 'ok') {
-    //     throw new Error(ret.data.message);
-    //   }
-    
+      //   if (ret.data.status !== 'ok') {
+      //     throw new Error(ret.data.message);
+      //   }
+
       return ret.data.output[0].content[0].text;
 
     } catch (e: any) {
@@ -32,13 +61,13 @@ export const api = {
     }
   },
 
-  async ExtractBO(form: {fileURL: string, prompt: string}): Promise<string> {
+  async ExtractBO(form: { fileURL: string, prompt: string }): Promise<string> {
     try {
       const ret = await axios.post(`${this.apiRoot}/chatgpt/url`, form);
-    //   if (ret.data.status !== 'ok') {
-    //     throw new Error(ret.data.message);
-    //   }
-   
+      //   if (ret.data.status !== 'ok') {
+      //     throw new Error(ret.data.message);
+      //   }
+
       return ret.data.output[1].content[0].text;
 
     } catch (e: any) {

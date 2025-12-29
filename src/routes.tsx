@@ -1,24 +1,36 @@
+import { RouteObject } from "react-router-dom";
 import { MainLayout } from "./layouts/main";
 import { ChatPage } from "./pages/chat";
 import { DashboardPage } from "./pages/dashboard";
 import { NotificationsPage } from "./pages/notifications";
 import { OpenAIPage } from "./pages/open-ai";
+import { ReactNode } from "react";
+import LoginPage from "./pages/login";
 
-export const PortfolioRoutes = [
+type Route = Omit<RouteObject, 'element'> & {
+    element: (arg0: { authorised?: boolean }) => ReactNode;
+    path: string;
+}
+
+export const PortfolioRoutes: Route[] = [
+    {
+        path: '/login',
+        element: () => <LoginPage />,
+    },
     {
         path: '/',
-        element: <MainLayout><DashboardPage /></MainLayout>,
+        element: ({ authorised }) => authorised ? <MainLayout><DashboardPage /></MainLayout> : <></>,
     },
     {
         path: '/open-ai',
-        element: <MainLayout><OpenAIPage /></MainLayout>,
+        element: ({ authorised }) => authorised ? <MainLayout><OpenAIPage /></MainLayout> : <></>,
     },
     {
         path: '/chat',
-        element: <MainLayout><ChatPage /></MainLayout>,
+        element: ({ authorised }) => authorised ? <MainLayout><ChatPage /></MainLayout> : <></>,
     },
     {
         path: '/notifications',
-        element: <MainLayout><NotificationsPage /></MainLayout>,
+        element: ({ authorised }) => authorised ? <MainLayout><NotificationsPage /></MainLayout> : <></>,
     },
 ]

@@ -44,7 +44,7 @@ messaging.onBackgroundMessage((payload) => {
             body: payload.notification?.body,
             icon: '/logo.svg',
             data: {
-                url: '/chat'
+                url: '/notifications'
             }
         }
     );
