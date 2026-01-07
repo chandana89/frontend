@@ -45,50 +45,48 @@ function App() {
     setUnreadCount((prev) => prev + 1);
   }, []);
 
-  useEffect(() => {
-    const requestPermissionAndGetToken = async () => {
-      try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          console.log('Notification permission granted.');
+  const requestPermissionAndGetToken = async () => {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        console.log('Notification permission granted.');
 
-          console.log(FIREBASE_VAPID_KEY, "VAPID")
+        console.log(FIREBASE_VAPID_KEY, "VAPID")
 
-          const currentToken = await getToken(messaging, {
-            vapidKey: FIREBASE_VAPID_KEY
-          });
+        const currentToken = await getToken(messaging, {
+          vapidKey: FIREBASE_VAPID_KEY
+        });
 
-          if (currentToken) {
-            console.log('FCM registration token:', currentToken);
-            await api.SaveToken(store.user!, currentToken).then(()=>{
-              console.log('Token sent to server successfully!')
-            })
-          } else {
-            console.log('No registration token available.');
-          }
+        if (currentToken) {
+          console.log('FCM registration token:', currentToken);
+          await api.SaveToken(store.user!, currentToken).then(() => {
+            console.log('Token sent to server successfully!')
+          })
         } else {
-          console.log('Notification permission denied.');
+          console.log('No registration token available.');
         }
-      } catch (error) {
-        console.error('Error retrieving token:', error);
+      } else {
+        console.log('Notification permission denied.');
       }
+    } catch (error) {
+      console.error('Error retrieving token:', error);
+    }
+  };
+
+  const unsubscribe = onMessage(messaging, (payload: MessagePayload) => {
+    const newNotif: AppNotification = {
+      title: payload.notification?.title,
+      body: payload.notification?.body,
+      image: payload.notification?.image,
+      receivedAt: Date.now(),
     };
 
+    setNotifications((prev) => [newNotif, ...prev]);
+    setUnreadCount((prev) => prev + 1);
+  });
+
+  useEffect(() => {
     requestPermissionAndGetToken();
-
-    const unsubscribe = onMessage(messaging, (payload: MessagePayload) => {
-      const newNotif: AppNotification = {
-        title: payload.notification?.title,
-        body: payload.notification?.body,
-        image: payload.notification?.image,
-        receivedAt: Date.now(),
-      };
-
-      setNotifications((prev) => [newNotif, ...prev]);
-      setUnreadCount((prev) => prev + 1);
-    });
-
-
     return () => unsubscribe();
   }, []);
 
