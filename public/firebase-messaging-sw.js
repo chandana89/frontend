@@ -36,7 +36,7 @@ self.addEventListener('notificationclick', (event) => {
 
 // Background messages
 messaging.onBackgroundMessage((payload) => {
-    console.log('[firebase-messaging-sw.js] Received BG message', payload);
+    console.log('Received BG message', payload);
 
     self.registration.showNotification(
         payload.notification?.title ?? 'New Notification',
