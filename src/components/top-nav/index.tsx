@@ -10,6 +10,7 @@ export const TopNav = () => {
                 <a href="/open-ai">Open AI</a>
                 <a href="/chat">Chat</a>
                 <a href="/notifications">Notifications</a>
+                <a href="/passkey">Passkey</a>
             </nav>
         </header>
     );

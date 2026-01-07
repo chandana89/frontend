@@ -6,6 +6,7 @@ import { NotificationsPage } from "./pages/notifications";
 import { OpenAIPage } from "./pages/open-ai";
 import { ReactNode } from "react";
 import LoginPage from "./pages/login";
+import { PasskeyPage } from "./pages/passkey";
 
 type Route = Omit<RouteObject, 'element'> & {
     element: (arg0: { authorised?: boolean }) => ReactNode;
@@ -32,5 +33,9 @@ export const PortfolioRoutes: Route[] = [
     {
         path: '/notifications',
         element: ({ authorised }) => authorised ? <MainLayout><NotificationsPage /></MainLayout> : <></>,
+    },
+    {
+        path: '/passkey',
+        element: ({ authorised }) => authorised ? <MainLayout><PasskeyPage /></MainLayout> : <></>,
     },
 ]

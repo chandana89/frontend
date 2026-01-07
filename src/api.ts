@@ -31,6 +31,34 @@ export const api = {
     }
   },
 
+  async GetPasskeyRegistrationOptions(userName: string) {
+    try {
+      const ret = await axios.post(`${this.apiRoot}/passkey`, { userName });
+      //   if (ret.data.status !== 'ok') {
+      //     throw new Error(ret.data.message);
+      //   }
+      console.log(ret, "ret")
+      return ret.data;
+
+    } catch (e: any) {
+      throw new Error(e.response?.data?.message || `An error has occured, please try again later`);
+    }
+  },
+
+  async VerifyPasskeyRegistration(userName: string, authResp: any) {
+    try {
+      const ret = await axios.post(`${this.apiRoot}/passkey/verify`, {userName, authResp });
+      //   if (ret.data.status !== 'ok') {
+      //     throw new Error(ret.data.message);
+      //   }
+      console.log(ret, "ret")
+      return ret.data;
+
+    } catch (e: any) {
+      throw new Error(e.response?.data?.message || `An error has occured, please try again later`);
+    }
+  },
+
   async GetBio(): Promise<string> {
     try {
       const ret = await axios.get(`${this.apiRoot}/`);
