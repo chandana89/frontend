@@ -35,11 +35,10 @@ const LoginPage = () => {
     }
 
     return (
-        <div className='register-page vh-100 d-flex bg-white row gx-0'>
+        <div className='register-page justify-content-center align-items-center d-flex bg-white row gx-0'>
             <div className="register-content col-xl-5 col-lg-6 py-5 p-sm-5">
                 <div className='mx-3'>
-                    <h2 className="login-heading m-0 mb-3">Welcome</h2>
-                    <p className="card-text mb-4">Please sign-in to your account using your login credentials</p>
+                    <h2 className="login-heading m-0 mb-3">SignIn</h2>
                     <form className="auth-login-form mt-2" onSubmit={handleSubmit} >
 
                         <div className="position-relative form-group mb-3">
