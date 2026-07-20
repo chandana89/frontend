@@ -44,3 +44,15 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+## Database
+
+The project uses Netlify Database with Drizzle ORM. The `users` and `passkeys` tables are defined in `db/schema.ts`, and Netlify applies the generated SQL migration from `netlify/database/migrations` during deployment.
+
+Server-side code can import the configured client from `db/index.ts`. User passwords stored in the `password` column must be hashed before insertion.
+
+After changing `db/schema.ts`, generate a matching migration with:
+
+```bash
+npx drizzle-kit generate
+```
