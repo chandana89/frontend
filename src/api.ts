@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = {
-  apiRoot: 'https://silly-youtiao-e59a93.netlify.app',
+  apiRoot: import.meta.env.VITE_API_HOST,
 
   async Login(userName: string, password: string): Promise<{ user: string }> {
     try {
