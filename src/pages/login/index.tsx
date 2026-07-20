@@ -30,8 +30,6 @@ const LoginPage = () => {
             setPassword('');
             setLoading(false);
         })
-
-
     }
 
     return (

@@ -18,7 +18,7 @@ const messaging = firebase.messaging();
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
 
-    const urlToOpen = event.notification.data?.url || '/';
+    const urlToOpen = event.notification.data?.url || '/notifications';
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
