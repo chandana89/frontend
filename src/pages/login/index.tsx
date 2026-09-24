@@ -43,17 +43,12 @@ const LoginPage = () => {
     }
 
     const handlePasskeySignIn = async () => {
-        if (email === '') {
-            setError('Enter your email to sign in with a passkey.');
-            return;
-        }
-
         setLoading(true);
         setError('');
         try {
-            const optionsJSON = await api.GetPasskeyLoginOptions(email);
+            const optionsJSON = await api.GetPasskeyLoginOptions();
             const authResp = await startAuthentication({ optionsJSON });
-            const ret = await api.VerifyPasskeyLogin(email, authResp);
+            const ret = await api.VerifyPasskeyLogin(authResp);
             store.setUser(ret.user);
             navigate(from, { replace: true });
         } catch (err: any) {

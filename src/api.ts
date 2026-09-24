@@ -70,13 +70,13 @@ export const api = {
   },
 
   /**
-   * Requests WebAuthn authentication options for `userName` (`POST /passkey/login`).
+   * Requests usernameless WebAuthn authentication options (`POST /passkey/login`).
    * The returned JSON is passed directly to `startAuthentication` from
-   * `@simplewebauthn/browser`. Fails if the account has no registered passkey.
+   * `@simplewebauthn/browser`, which lets the user pick any passkey saved for this site.
    */
-  async GetPasskeyLoginOptions(userName: string) {
+  async GetPasskeyLoginOptions() {
     try {
-      const ret = await axios.post(`${this.apiRoot}/passkey/login`, { userName });
+      const ret = await axios.post(`${this.apiRoot}/passkey/login`);
       return ret.data;
 
     } catch (e: any) {
@@ -86,11 +86,12 @@ export const api = {
 
   /**
    * Sends the browser's authentication response to the backend (`POST /passkey/login/verify`).
-   * Resolves with the signed-in user, in the same shape as `Login`.
+   * The backend finds the account from the passkey. Resolves with the signed-in user,
+   * in the same shape as `Login`.
    */
-  async VerifyPasskeyLogin(userName: string, authResp: any): Promise<{ user: string }> {
+  async VerifyPasskeyLogin(authResp: any): Promise<{ user: string }> {
     try {
-      const ret = await axios.post(`${this.apiRoot}/passkey/login/verify`, { userName, authResp });
+      const ret = await axios.post(`${this.apiRoot}/passkey/login/verify`, { authResp });
       return { user: ret.data.user };
 
     } catch (e: any) {

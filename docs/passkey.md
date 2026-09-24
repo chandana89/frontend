@@ -7,7 +7,7 @@ Users can register a passkey and then use it instead of their password to sign i
 | Frontend | [`src/pages/passkey/index.tsx`](../src/pages/passkey/index.tsx) (register), [`src/pages/login/index.tsx`](../src/pages/login/index.tsx) (sign in), [`src/api.ts`](../src/api.ts) | [`@simplewebauthn/browser`](https://simplewebauthn.dev/docs/packages/browser) v13 |
 | Backend (NestJS, separate `backend` repo) | `src/modules/passkey/` (controller, service, module), `src/entities/passkey.entity.ts`, `src/entities/user.entity.ts` | [`@simplewebauthn/server`](https://simplewebauthn.dev/docs/packages/server) v13 |
 
-Both registration and sign-in take two requests. The first returns options with a fresh challenge. The second sends back the browser's signed response for the backend to verify. Accounts are identified by `userName`, which is the user's email.
+Both registration and sign-in take two requests. The first returns options with a fresh challenge. The second sends back the browser's signed response for the backend to verify. Registration identifies the account by `userName` (the user's email). Sign-in needs no email: the browser offers the passkeys it has saved for this site, and the backend finds the account from the one the user picks.
 
 ## Registration flow
 
@@ -26,21 +26,21 @@ Registration options the backend uses:
 | Option | Value | Effect |
 | --- | --- | --- |
 | `authenticatorAttachment` | `platform` | Only the device's built-in authenticator (Touch ID, Face ID, Windows Hello, Android screen lock). You can't use security keys or a phone scanned by QR code. |
-| `residentKey` | `preferred` | The device may, but doesn't have to, store a passkey that works without typing an email. That's why sign-in asks for the email. |
+| `residentKey` | `required` | The device must store a discoverable passkey, one it can offer without being told the account. Sign-in without an email depends on this. |
 | `userVerification` | `preferred` | The device asks for a biometric or PIN when it can. |
 | `attestationType` | `none` | No attestation certificate is requested or checked. |
 
 ## Sign-in flow
 
-The login page shows **Sign in with passkey** only when the browser supports WebAuthn.
+The login page shows **Sign in with passkey** only when the browser supports WebAuthn. The email field isn't needed.
 
-1. The user enters their email and clicks **Sign in with passkey**.
-2. `api.GetPasskeyLoginOptions(userName)` calls `POST /passkey/login`. The backend lists the user's passkeys in `allowCredentials` and saves the challenge in `user.currentChallenge`. An unknown email and an account without passkeys both get `400 No passkey registered for this account`.
-3. `startAuthentication({ optionsJSON })` asks the device to sign the challenge.
-4. `api.VerifyPasskeyLogin(userName, authResp)` calls `POST /passkey/login/verify`. The backend:
-   - finds the passkey whose credential ID matches `authResp.id`, among this user's passkeys only;
+1. The user clicks **Sign in with passkey**.
+2. `api.GetPasskeyLoginOptions()` calls `POST /passkey/login`. The backend generates options with an empty `allowCredentials`, so the browser can offer any passkey saved for this site. It remembers the challenge in memory for 5 minutes.
+3. `startAuthentication({ optionsJSON })` shows the device's passkey picker, and the chosen passkey signs the challenge.
+4. `api.VerifyPasskeyLogin(authResp)` calls `POST /passkey/login/verify`. The backend:
+   - reads the challenge out of the response's `clientDataJSON` and checks that it issued it, that it hasn't expired and that it hasn't been used, then discards it;
+   - finds the passkey, and with it the user, by the credential ID in `authResp.id`;
    - verifies the signature with the stored public key, and the challenge, `ORIGIN` and `RP_ID`;
-   - clears the challenge whether or not verification succeeded;
    - saves the new signature counter and returns `{ user }` (the email), the same response as password login.
 5. The frontend stores the user in session storage and redirects, exactly as after password login.
 
@@ -52,8 +52,8 @@ All four are `POST` requests with a JSON body, served from `VITE_API_HOST` (curr
 | --- | --- | --- | --- |
 | `/passkey` | `{ userName }` | Registration options (`PublicKeyCredentialCreationOptionsJSON`) | `400 Invalid user` |
 | `/passkey/verify` | `{ userName, authResp }` | `{ verified: true }` | `400 No registration in progress`, `400 Registration verification failed`, `500` (see [Known limitations](#known-limitations)) |
-| `/passkey/login` | `{ userName }` | Sign-in options (`PublicKeyCredentialRequestOptionsJSON`) | `400 No passkey registered for this account` |
-| `/passkey/login/verify` | `{ userName, authResp }` | `{ user }` | `401 No sign-in in progress`, `401 Passkey not recognised for this account`, `401` with the library's verification error |
+| `/passkey/login` | none | Sign-in options (`PublicKeyCredentialRequestOptionsJSON`) | none |
+| `/passkey/login/verify` | `{ authResp }` | `{ user }` | `401 Sign-in request expired, please try again`, `401 Passkey not recognised`, `401` with the library's verification error |
 
 The frontend shows each error's `message` to the user.
 
@@ -70,7 +70,9 @@ The frontend shows each error's `message` to the user.
 | `transports` | text[], nullable | How the browser can reach the authenticator (e.g. `internal`, `hybrid`). Sent back as a hint. |
 | `user_id` | uuid, FK to `user` | Owner |
 
-**`user.currentChallenge`** (varchar, nullable) holds the pending challenge. Registration and sign-in share this column, so starting one replaces a challenge left over from the other. It is cleared after a successful registration and after every sign-in attempt.
+**`user.currentChallenge`** (varchar, nullable) holds the pending *registration* challenge. It is cleared after a successful registration.
+
+**Sign-in challenges** aren't in the database, because the user isn't known when sign-in starts. `PasskeyService` keeps them in an in-memory map (`loginChallenges`), each valid for 5 minutes and removed once used. Expired entries are pruned whenever a new sign-in starts.
 
 The schema is created by TypeORM `synchronize: true`; there are no migrations.
 
@@ -94,7 +96,8 @@ WebAuthn only works in a secure context: HTTPS, or `localhost` during developmen
 
 - **Anyone can register a passkey for any email.** `POST /passkey` and `/passkey/verify` trust the `userName` in the request body. The backend has no session or token to confirm who is calling, and password login only returns the email. So someone who knows a user's email can register their own passkey on that account and then sign in as that user. Registration must be tied to an authenticated session before this goes to production.
 - **Registration verification errors return 500.** `verifyRegistrationResponse` throws on a mismatched challenge, origin or RP ID. `/passkey/verify` doesn't catch this, so the user sees "Internal server error". Sign-in catches the same kind of error and returns a `401`.
-- **An email is required to sign in** (see `residentKey` above).
+- **Passkeys registered before sign-in became usernameless may not show up.** Those were created with `residentKey: 'preferred'`, so some devices stored them as non-discoverable. Remove them from the device and register again. Most platform authenticators (Apple, Windows Hello, Google Password Manager) create discoverable passkeys anyway.
+- **Sign-in challenges live in memory.** A backend restart cancels any sign-in in progress. If the backend runs on more than one instance, the challenge must be stored somewhere shared (a table or Redis), or verification fails whenever it lands on a different instance.
 - **Only built-in authenticators** (see `authenticatorAttachment` above).
 - **Debug logging:** the controller logs `authResp` and the service logs the full verification result on every registration.
 - **Error messages reveal accounts:** registration's `Invalid user` tells a caller whether an email has an account.
@@ -102,8 +105,9 @@ WebAuthn only works in a secure context: HTTPS, or `localhost` during developmen
 ## Troubleshooting
 
 - **"Internal server error" when adding a passkey**: registration verification failed; usually `ORIGIN` or `RP_ID` doesn't match the frontend URL. The backend logs have the real error.
-- **"No passkey registered for this account"**: register one from `/passkey` first, while signed in with a password. Also check the email is typed exactly as registered.
-- **"No sign-in in progress" / "No registration in progress"**: the challenge was already used or replaced (for example, another tab started a passkey request). Try again.
+- **The passkey picker shows no passkeys, or "Passkey not recognised"**: no passkey for this site is saved on this device, or the saved one was deleted on the server. Register one from `/passkey` while signed in with a password.
+- **"Sign-in request expired, please try again"**: more than 5 minutes passed, the backend restarted, or the request was already used. Click the button again.
+- **"No registration in progress"**: the registration challenge was already used (for example, another tab registered first). Try again.
 - **`SecurityError` / "The operation is insecure"**: the page isn't served over HTTPS or `localhost`, or `RP_ID` doesn't match the current domain.
 - **`InvalidStateError` when registering**: this device already has a passkey for the account.
 - **`NotAllowedError`**: the user cancelled the prompt or it timed out.
