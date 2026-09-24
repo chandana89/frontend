@@ -41,7 +41,7 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 
 ## Passkeys
 
-Signed-in users can register a passkey at `/passkey`. See [docs/passkey.md](docs/passkey.md) for the registration flow, backend endpoints and requirements.
+Signed-in users can register a passkey at `/passkey`, then sign in with it from the login page without entering an email or password (**Sign in with passkey**). See [docs/passkey.md](docs/passkey.md) for how it works, the backend endpoints and requirements.
 
 ## Learn More
 
