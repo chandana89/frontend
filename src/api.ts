@@ -69,6 +69,35 @@ export const api = {
     }
   },
 
+  /**
+   * Requests WebAuthn authentication options for `userName` (`POST /passkey/login`).
+   * The returned JSON is passed directly to `startAuthentication` from
+   * `@simplewebauthn/browser`. Fails if the account has no registered passkey.
+   */
+  async GetPasskeyLoginOptions(userName: string) {
+    try {
+      const ret = await axios.post(`${this.apiRoot}/passkey/login`, { userName });
+      return ret.data;
+
+    } catch (e: any) {
+      throw new Error(e.response?.data?.message || `An error has occured, please try again later`);
+    }
+  },
+
+  /**
+   * Sends the browser's authentication response to the backend (`POST /passkey/login/verify`).
+   * Resolves with the signed-in user, in the same shape as `Login`.
+   */
+  async VerifyPasskeyLogin(userName: string, authResp: any): Promise<{ user: string }> {
+    try {
+      const ret = await axios.post(`${this.apiRoot}/passkey/login/verify`, { userName, authResp });
+      return { user: ret.data.user };
+
+    } catch (e: any) {
+      throw new Error(e.response?.data?.message || `An error has occured, please try again later`);
+    }
+  },
+
   async GetBio(): Promise<string> {
     try {
       const ret = await axios.get(`${this.apiRoot}/`);

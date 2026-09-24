@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { browserSupportsWebAuthn, startAuthentication } from '@simplewebauthn/browser';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../api';
 import { AccountStatus, Status } from '../../hooks/auth';
@@ -13,23 +14,53 @@ const LoginPage = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
+    const [error, setError] = useState<string>('');
 
     const from = location.state?.from?.pathname || '/';
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (password === '' || email === '') return;
+        if (password === '' || email === '') {
+            setError('Enter your email and password.');
+            return;
+        }
 
         setLoading(true);
-        await api.Login(email, password).then((ret) => {
+        setError('');
+        try {
+            const ret = await api.Login(email, password);
             store.setUser(ret.user);
             if (Status() === AccountStatus.Authenticated)
                 return navigate(from, { replace: true });
-            setEmail('');
-            setPassword('');
+            setError('Could not sign in, please try again.');
+        } catch (err: any) {
+            console.error(err);
+            setError(err?.message || 'Could not sign in, please try again.');
+        }
+        setPassword('');
+        setLoading(false);
+    }
+
+    const handlePasskeySignIn = async () => {
+        if (email === '') {
+            setError('Enter your email to sign in with a passkey.');
+            return;
+        }
+
+        setLoading(true);
+        setError('');
+        try {
+            const optionsJSON = await api.GetPasskeyLoginOptions(email);
+            const authResp = await startAuthentication({ optionsJSON });
+            const ret = await api.VerifyPasskeyLogin(email, authResp);
+            store.setUser(ret.user);
+            navigate(from, { replace: true });
+        } catch (err: any) {
+            console.error(err);
+            setError(err?.message || 'Could not sign in with passkey.');
             setLoading(false);
-        })
+        }
     }
 
     return (
@@ -55,10 +86,17 @@ const LoginPage = () => {
                             <div className="invalid-feedback">A password is required</div>
                         </div>
 
+                        {error && <div className="alert alert-danger py-2" role="alert">{error}</div>}
+
                         <div className="d-grid gap-2">
                             <button tabIndex={4} className="btn btn-primary" disabled={loading} >
                                 {loading && <span className="spinner-border spinner-border-sm me-1" />}Sign in
                             </button>
+                            {browserSupportsWebAuthn() && (
+                                <button type="button" tabIndex={5} className="btn btn-outline-primary" disabled={loading} onClick={handlePasskeySignIn}>
+                                    Sign in with passkey
+                                </button>
+                            )}
                         </div>
 
                     </form>
