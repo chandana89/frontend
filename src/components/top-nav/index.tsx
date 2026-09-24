@@ -1,5 +1,14 @@
+import { useNavigate } from "react-router-dom";
+import { useStore } from "../../store";
 
 export const TopNav = () => {
+    const setUser = useStore((state) => state.setUser);
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        setUser(undefined);
+        navigate('/login', { replace: true });
+    };
 
     return (
         <header className="top-nav">
@@ -12,6 +21,8 @@ export const TopNav = () => {
                 <a href="/notifications">Notifications</a>
                 <a href="/passkey">Passkey</a>
             </nav>
+
+            <button type="button" className="top-nav__logout" onClick={handleLogout}>Logout</button>
         </header>
     );
 };

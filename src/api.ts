@@ -31,6 +31,11 @@ export const api = {
     }
   },
 
+  /**
+   * Requests WebAuthn registration options for `userName` (`POST /passkey`).
+   * The returned JSON is passed directly to `startRegistration` from
+   * `@simplewebauthn/browser`.
+   */
   async GetPasskeyRegistrationOptions(userName: string) {
     try {
       const ret = await axios.post(`${this.apiRoot}/passkey`, { userName });
@@ -45,6 +50,11 @@ export const api = {
     }
   },
 
+  /**
+   * Sends the browser's registration response to the backend for verification
+   * (`POST /passkey/verify`). `authResp` is the value resolved by `startRegistration`.
+   * Resolves with the backend's verification result.
+   */
   async VerifyPasskeyRegistration(userName: string, authResp: any) {
     try {
       const ret = await axios.post(`${this.apiRoot}/passkey/verify`, {userName, authResp });

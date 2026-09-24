@@ -29,6 +29,7 @@ function App() {
 
     switch (Status()) {
       case AccountStatus.LoggedOut:
+        setAuthorised(false);
         navigate('/login');
         break;
       default:
