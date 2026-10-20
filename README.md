@@ -39,6 +39,10 @@ Instead, it will copy all the configuration files and the transitive dependencie
 
 You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
+## Accounts
+
+New users can create an account from the login page (**Create account**, `/register`) with an email and a password of at least 8 characters. They're signed in straight away.
+
 ## Passkeys
 
 Signed-in users can register a passkey at `/passkey`, then sign in with it from the login page without entering an email or password (**Sign in with passkey**). See [docs/passkey.md](docs/passkey.md) for how it works, the backend endpoints and requirements.

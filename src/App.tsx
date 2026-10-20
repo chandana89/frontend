@@ -23,7 +23,7 @@ function App() {
   useEffect(() => {
 
     //* Exempt routes below from protection as they are public routes
-    if (loc.pathname.match(/^\/(login|logout)/)) {
+    if (loc.pathname.match(/^\/(login|logout|register)/)) {
       return;
     }
 

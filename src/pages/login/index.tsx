@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { browserSupportsWebAuthn, startAuthentication } from '@simplewebauthn/browser';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../api';
 import { AccountStatus, Status } from '../../hooks/auth';
 import { useStore } from '../../store';
@@ -93,6 +93,10 @@ const LoginPage = () => {
                                 </button>
                             )}
                         </div>
+
+                        <p className="text-center mt-3 mb-0">
+                            Don't have an account? <Link to="/register" state={location.state}>Create account</Link>
+                        </p>
 
                     </form>
                 </div>
