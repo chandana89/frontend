@@ -3,13 +3,15 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 export type Store = {
   user?: string;
-  setUser: (user?: string) => void;
+  /** Session token from sign-in, sent as `Authorization: Bearer` to authenticated endpoints. */
+  token?: string;
+  setUser: (user?: string, token?: string) => void;
 };
 
 export const useStore = create<Store>()(
   persist(
     (set, get) => ({
-      setUser: (user?: string) => set(() => ({ user })),
+      setUser: (user?: string, token?: string) => set(() => ({ user, token })),
     }),
     {
       name: "sample",

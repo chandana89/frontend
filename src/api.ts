@@ -3,18 +3,23 @@ import axios from "axios";
 export const api = {
   apiRoot: import.meta.env.VITE_API_HOST,
 
-  async Login(userName: string, password: string): Promise<{ user: string }> {
+  /** Password sign-in. Resolves with the user's email and a session token. */
+  async Login(userName: string, password: string): Promise<{ user: string, token: string }> {
     try {
       const ret = await axios.post(`${this.apiRoot}/authenticate/login`, { userName, password });
       //   if (ret.data.status !== 'ok') {
       //     throw new Error(ret.data.message);
       //   }
-      console.log(ret, "ret")
-      return { user: ret.data.user };
+      return { user: ret.data.user, token: ret.data.token };
 
     } catch (e: any) {
       throw new Error(e.response?.data?.message || `An error has occured, please try again later`);
     }
+  },
+
+  /** Ends the session for `token` (`POST /authenticate/logout`). */
+  async Logout(token: string) {
+    await axios.post(`${this.apiRoot}/authenticate/logout`, {}, { headers: { Authorization: `Bearer ${token}` } });
   },
 
   async SaveToken(userName: string, token: string): Promise<string> {
@@ -32,17 +37,13 @@ export const api = {
   },
 
   /**
-   * Requests WebAuthn registration options for `userName` (`POST /passkey`).
+   * Requests WebAuthn registration options for the signed-in user (`POST /passkey`).
    * The returned JSON is passed directly to `startRegistration` from
    * `@simplewebauthn/browser`.
    */
-  async GetPasskeyRegistrationOptions(userName: string) {
+  async GetPasskeyRegistrationOptions(token: string) {
     try {
-      const ret = await axios.post(`${this.apiRoot}/passkey`, { userName });
-      //   if (ret.data.status !== 'ok') {
-      //     throw new Error(ret.data.message);
-      //   }
-      console.log(ret, "ret")
+      const ret = await axios.post(`${this.apiRoot}/passkey`, {}, { headers: { Authorization: `Bearer ${token}` } });
       return ret.data;
 
     } catch (e: any) {
@@ -55,13 +56,9 @@ export const api = {
    * (`POST /passkey/verify`). `authResp` is the value resolved by `startRegistration`.
    * Resolves with the backend's verification result.
    */
-  async VerifyPasskeyRegistration(userName: string, authResp: any) {
+  async VerifyPasskeyRegistration(token: string, authResp: any) {
     try {
-      const ret = await axios.post(`${this.apiRoot}/passkey/verify`, {userName, authResp });
-      //   if (ret.data.status !== 'ok') {
-      //     throw new Error(ret.data.message);
-      //   }
-      console.log(ret, "ret")
+      const ret = await axios.post(`${this.apiRoot}/passkey/verify`, { authResp }, { headers: { Authorization: `Bearer ${token}` } });
       return ret.data;
 
     } catch (e: any) {
@@ -87,12 +84,12 @@ export const api = {
   /**
    * Sends the browser's authentication response to the backend (`POST /passkey/login/verify`).
    * The backend finds the account from the passkey. Resolves with the signed-in user,
-   * in the same shape as `Login`.
+   * and a session token, in the same shape as `Login`.
    */
-  async VerifyPasskeyLogin(authResp: any): Promise<{ user: string }> {
+  async VerifyPasskeyLogin(authResp: any): Promise<{ user: string, token: string }> {
     try {
       const ret = await axios.post(`${this.apiRoot}/passkey/login/verify`, { authResp });
-      return { user: ret.data.user };
+      return { user: ret.data.user, token: ret.data.token };
 
     } catch (e: any) {
       throw new Error(e.response?.data?.message || `An error has occured, please try again later`);

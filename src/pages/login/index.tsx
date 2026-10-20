@@ -30,7 +30,7 @@ const LoginPage = () => {
         setError('');
         try {
             const ret = await api.Login(email, password);
-            store.setUser(ret.user);
+            store.setUser(ret.user, ret.token);
             if (Status() === AccountStatus.Authenticated)
                 return navigate(from, { replace: true });
             setError('Could not sign in, please try again.');
@@ -49,7 +49,7 @@ const LoginPage = () => {
             const optionsJSON = await api.GetPasskeyLoginOptions();
             const authResp = await startAuthentication({ optionsJSON });
             const ret = await api.VerifyPasskeyLogin(authResp);
-            store.setUser(ret.user);
+            store.setUser(ret.user, ret.token);
             navigate(from, { replace: true });
         } catch (err: any) {
             console.error(err);
