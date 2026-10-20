@@ -6,6 +6,7 @@ import { NotificationsPage } from "./pages/notifications";
 import { OpenAIPage } from "./pages/open-ai";
 import { ReactNode } from "react";
 import LoginPage from "./pages/login";
+import RegisterPage from "./pages/register";
 import { PasskeyPage } from "./pages/passkey";
 
 type Route = Omit<RouteObject, 'element'> & {
@@ -17,6 +18,10 @@ export const PortfolioRoutes: Route[] = [
     {
         path: '/login',
         element: () => <LoginPage />,
+    },
+    {
+        path: '/register',
+        element: () => <RegisterPage />,
     },
     {
         path: '/',

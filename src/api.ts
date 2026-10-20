@@ -17,6 +17,22 @@ export const api = {
     }
   },
 
+  /**
+   * Creates an account and signs it in (`POST /authenticate/register`).
+   * Resolves with the same `{ user, token }` as `Login`.
+   */
+  async Register(email: string, password: string): Promise<{ user: string, token: string }> {
+    try {
+      const ret = await axios.post(`${this.apiRoot}/authenticate/register`, { email, password });
+      return { user: ret.data.user, token: ret.data.token };
+
+    } catch (e: any) {
+      // Validation errors come back as a list of messages.
+      const message = e.response?.data?.message;
+      throw new Error((Array.isArray(message) ? message.join('. ') : message) || `An error has occured, please try again later`);
+    }
+  },
+
   /** Ends the session for `token` (`POST /authenticate/logout`). */
   async Logout(token: string) {
     await axios.post(`${this.apiRoot}/authenticate/logout`, {}, { headers: { Authorization: `Bearer ${token}` } });
