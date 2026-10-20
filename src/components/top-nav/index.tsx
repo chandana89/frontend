@@ -1,11 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../../store";
+import { api } from "../../api";
 
 export const TopNav = () => {
     const setUser = useStore((state) => state.setUser);
+    const token = useStore((state) => state.token);
     const navigate = useNavigate();
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        // Ends the session on the backend too; sign out locally even if that fails.
+        if (token) await api.Logout(token).catch(console.error);
         setUser(undefined);
         navigate('/login', { replace: true });
     };

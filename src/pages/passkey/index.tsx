@@ -7,7 +7,8 @@ import { useStore } from "../../store";
  * Lets a signed-in user register a passkey (WebAuthn credential) for their account.
  *
  * Registration flow:
- * 1. Fetch registration options from the backend (`POST /passkey`).
+ * 1. Fetch registration options from the backend (`POST /passkey`). Both backend calls
+ *    send the session token; the backend registers the passkey on that session's account.
  * 2. Hand them to the browser via `startRegistration`, which prompts the user
  *    for touch, face, device password or PIN and creates the credential.
  * 3. Send the browser's response to the backend (`POST /passkey/verify`) so it
@@ -22,7 +23,7 @@ export const PasskeyPage = () => {
   const [loading, setLoading] = useState(false);
 
   const handleAddPasskey = async () => {
-    if (!store.user) {
+    if (!store.token) {
       setStatus('You need to be signed in to add a passkey.');
       return;
     }
@@ -30,9 +31,9 @@ export const PasskeyPage = () => {
     setLoading(true);
     setStatus('');
     try {
-      const optionsJSON = await api.GetPasskeyRegistrationOptions(store.user);
+      const optionsJSON = await api.GetPasskeyRegistrationOptions(store.token);
       const regResp = await startRegistration({ optionsJSON });
-      const verification = await api.VerifyPasskeyRegistration(store.user, regResp);
+      const verification = await api.VerifyPasskeyRegistration(store.token, regResp);
       setStatus(verification?.verified ? 'Passkey added.' : 'Passkey could not be verified.');
     } catch (err: any) {
       console.error(err);
